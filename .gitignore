@@ -3,3 +3,5 @@ static
 .DS_Store
 .idea
 coverage
+
+build-log.txt
