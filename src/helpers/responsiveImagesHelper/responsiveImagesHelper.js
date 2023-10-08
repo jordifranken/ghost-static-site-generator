@@ -2,6 +2,8 @@ const path = require('path');
 const fs = require('fs');
 const OPTIONS = require('../../constants/OPTIONS');
 const crawlPageAsyncHelper = require('../crawlPageAsyncHelper');
+const async = require("async");
+
 
 /**
  * These are the image sizes that we want to generate
@@ -57,15 +59,31 @@ const responsiveImagesHelper = () => {
     `${OPTIONS.STATIC_DIRECTORY}/content`,
   );
   const allFiles = getAllFileNames(contentPath);
+  const urls = []
 
-  allFiles.forEach((filePath) => {
-    const url = filePath.replace(
-      OPTIONS.ABSOLUTE_STATIC_DIRECTORY,
-      OPTIONS.SOURCE_DOMAIN,
-    );
+  async.each(
+    allFiles,
+    function(filePath){
+      const url = filePath.replace(
+        OPTIONS.ABSOLUTE_STATIC_DIRECTORY,
+        OPTIONS.SOURCE_DOMAIN,
+      );
+      urls.push(url)
+    },
+  )
 
-    crawlPageAsyncHelper(url);
-  });
+  async.eachLimit(
+    urls,
+    20,
+    crawlPageAsyncHelper,
+    function(err) {
+      if( err ) {
+          console.log(err);
+      } else {
+          console.log('All files have been processed successfully');
+      }
+    }
+  );
 };
 
 module.exports = responsiveImagesHelper;
